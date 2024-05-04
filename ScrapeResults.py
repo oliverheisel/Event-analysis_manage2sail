@@ -69,14 +69,14 @@ if __name__ == "__main__":
     service = Service('/usr/local/bin/chromedriver')
     driver = webdriver.Chrome(service=service, options=options)
 
-    url = 'https://www.manage2sail.com/en-US/event/de6579c4-b9bd-45be-8d7e-5784fda3ab31#!'
+    url = 'https://www.manage2sail.com/en-US/event/2c2c10ce-db40-4402-97fb-4fd120e071f1#!'
     driver.get(url)
     wait = WebDriverWait(driver, 10)
     event_details = scrape_eventdetails()
     print(event_details)
     event_results = scrape_eventresults(url)
     driver.quit()
-
-    # Write results to a JSON file
-    with open('manage2sail_results.json', 'w') as file:
-        json.dump(event_results, file, indent=4)
+print(event_results)
+    # # Write results to a JSON file
+    # with open('manage2sail_results.json', 'w') as file:
+    #     json.dump(event_results, file, indent=4)
