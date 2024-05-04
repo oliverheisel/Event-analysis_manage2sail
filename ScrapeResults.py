@@ -41,7 +41,7 @@ def scrape_eventresults(base_url):
             dropdown = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#results > div > div > select')))
             select = Select(dropdown)
             select.select_by_index(index)
-            time.sleep(5)  # Adjust the sleep time if necessary
+            time.sleep(3)  # Adjust the sleep time if necessary
 
             # Find and process the table data
             selector = '#results > div > div > div:nth-child(3) > div:nth-child(5) > div:nth-child(2) > div:nth-child(3) > table:nth-child(4)'
@@ -75,8 +75,8 @@ if __name__ == "__main__":
     event_details = scrape_eventdetails()
     print(event_details)
     event_results = scrape_eventresults(url)
+    print(event_results)
     driver.quit()
-print(event_results)
     # # Write results to a JSON file
     # with open('manage2sail_results.json', 'w') as file:
     #     json.dump(event_results, file, indent=4)
