@@ -1,7 +1,7 @@
 # Libaries
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select, WebDriverWait
@@ -26,6 +26,7 @@ if "manage2sail" in client.list_database_names():
 else:
     print("Database does not exist!")
 
+
 def scrape_eventdetails(wait, driver):
     eventdetails = []
     selector = '#details > table'
@@ -48,8 +49,9 @@ def get_table_headers(driver, wait, header_selector):
                         'ng-hide' not in th.get_attribute('class')]
         return header_texts
     except Exception as e:
-        print(f"An error occurred while fetching headers: {e}")
+        #print(f"An error occurred while fetching headers: {e}")
         return []
+
 
 def replace_column_keys(data, headers):
     new_data = []
@@ -61,62 +63,148 @@ def replace_column_keys(data, headers):
         new_data.append(new_record)
     return new_data
 
+
+# # Function to scrape event results
+# from selenium.webdriver.support.ui import WebDriverWait, Select
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support import expected_conditions as EC
+# from selenium.common.exceptions import NoSuchElementException
+#
+# def scrape_eventresults(base_url, driver):
+#     # Ergebnis-URL definieren und mit dem WebDriver öffnen
+#     results = {}
+#     results_url = base_url + '#!/results'
+#     driver.get(results_url)
+#     wait = WebDriverWait(driver, 10)
+#
+#     # CSS-Selektoren definieren
+#     regatta_name_selector = '#results > div > div > div.regattaName'
+#     table_selector = '#results > div > div > div:nth-child(3) > div:nth-child(5) > div:nth-child(2) > div:nth-child(3) > table:nth-child(4)'
+#     header_selector = table_selector + ' > thead'
+#
+#     # Versuch, das Dropdown-Element zu finden und zu verarbeiten
+#     try:
+#         dropdown_selector = '#results > div > div > select'
+#         dropdown = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, dropdown_selector)))
+#         select = Select(dropdown)
+#
+#         # Texte der Dropdown-Optionen in einer Liste speichern
+#         option_texts = [option.text for option in select.options if option.text]
+#
+#         if not option_texts:
+#             raise Exception("No options found in dropdown")
+#
+#         for option_text in option_texts:
+#             try:
+#                 select = Select(wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, dropdown_selector))))
+#                 select.select_by_visible_text(option_text)
+#                 wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, table_selector)))
+#
+#                 results[option_text] = []
+#                 table = driver.find_element(By.CSS_SELECTOR, table_selector)
+#                 headers = get_table_headers(driver, wait, header_selector)
+#
+#                 for row in table.find_elements(By.TAG_NAME, 'tr'):
+#                     columns = row.find_elements(By.TAG_NAME, 'td')
+#                     row_data = {f"column_{i}": col.text for i, col in enumerate(columns) if 'ng-hide' not in col.get_attribute('class')}
+#                     if any(value.strip() for value in row_data.values()):
+#                         results[option_text].append(row_data)
+#
+#                 results[option_text] = replace_column_keys(results[option_text], headers)
+#             except Exception as e:
+#                 results[option_text] = "no results due to error: " + str(e)
+#
+#     except:
+#         # Kein Dropdown, nur die aktuelle Seite scrapen
+#         try:
+#             regatta_name = driver.find_element(By.CSS_SELECTOR, regatta_name_selector).text
+#             results[regatta_name] = []
+#             table = driver.find_element(By.CSS_SELECTOR, table_selector)
+#             headers = get_table_headers(driver, wait, header_selector)
+#
+#             for row in table.find_elements(By.TAG_NAME, 'tr'):
+#                 columns = row.find_elements(By.TAG_NAME, 'td')
+#                 row_data = {f"column_{i}": col.text for i, col in enumerate(columns) if 'ng-hide' not in col.get_attribute('class')}
+#                 if any(value.strip() for value in row_data.values()):
+#                     results[regatta_name].append(row_data)
+#
+#             results[regatta_name] = replace_column_keys(results[regatta_name], headers)
+#         except Exception as e:
+#             results[regatta_name] = "no results due to error: " + str(e)
+#
+#     return results
+
+from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
+
 def scrape_eventresults(base_url, driver):
+    # Ergebnis-URL definieren und mit dem WebDriver öffnen
     results = {}
     results_url = base_url + '#!/results'
     driver.get(results_url)
+    wait = WebDriverWait(driver, 10)
 
+    # CSS-Selektoren definieren
     regatta_name_selector = '#results > div > div > div.regattaName'
     table_selector = '#results > div > div > div:nth-child(3) > div:nth-child(5) > div:nth-child(2) > div:nth-child(3) > table:nth-child(4)'
     header_selector = table_selector + ' > thead'
 
-    try:
-        dropdown_selector = '#results > div > div > select'
-        dropdown = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, dropdown_selector)))
-        select = Select(dropdown)
-        if len(select.options) > 0:
-            print(select.options)
-            for option in select.options:
-                try:
-                    option_name = option.text
-                    print(option_name)
-                    # Relocate the dropdown after each iteration
-                    dropdown = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, dropdown_selector)))
-                    select = Select(dropdown)
-                    select.select_by_visible_text(option_name)
-                    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, table_selector)))
-                    results[option_name] = []
-                    table = driver.find_element(By.CSS_SELECTOR, table_selector)
-                    headers = get_table_headers(driver, wait, header_selector)
-                    for row in table.find_elements(By.TAG_NAME, 'tr'):
-                        columns = row.find_elements(By.TAG_NAME, 'td')
-                        row_data = {f"column_{i}": col.text for i, col in enumerate(columns) if
-                                    'ng-hide' not in col.get_attribute('class')}
-                        if any(value.strip() for value in row_data.values()):
-                            results[option_name].append(row_data)
-                    results[option_name] = replace_column_keys(results[option_name], headers)
-                except:
-                    results[option] = "no results"
+    # Überprüfen, ob das Dropdown existiert
+    dropdown_selector = '#results > div > div > select'
+    dropdown_elements = driver.find_elements(By.CSS_SELECTOR, dropdown_selector)
 
-        else:
+    if dropdown_elements:
+        # Dropdown vorhanden, verarbeite jede Option
+        select = Select(dropdown_elements[0])
+        option_texts = [option.text for option in select.options if option.text]
+
+        if not option_texts:
             raise Exception("No options found in dropdown")
-    except:
+
+        for option_text in option_texts:
+            try:
+                select = Select(wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, dropdown_selector))))
+                select.select_by_visible_text(option_text)
+                wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, table_selector)))
+
+                results[option_text] = []
+                table = driver.find_element(By.CSS_SELECTOR, table_selector)
+                headers = get_table_headers(driver, wait, header_selector)
+                if len(headers) == 0:
+                    raise Exception("Header length is zero")
+
+                for row in table.find_elements(By.TAG_NAME, 'tr'):
+                    columns = row.find_elements(By.TAG_NAME, 'td')
+                    row_data = {f"column_{i}": col.text for i, col in enumerate(columns) if 'ng-hide' not in col.get_attribute('class')}
+                    if any(value.strip() for value in row_data.values()):
+                        results[option_text].append(row_data)
+
+                results[option_text] = replace_column_keys(results[option_text], headers)
+            except Exception as e:
+                results[option_text] = "no results"
+    else:
+        # Kein Dropdown, nur die aktuelle Seite scrapen
         try:
             regatta_name = driver.find_element(By.CSS_SELECTOR, regatta_name_selector).text
             results[regatta_name] = []
             table = driver.find_element(By.CSS_SELECTOR, table_selector)
             headers = get_table_headers(driver, wait, header_selector)
+            if len(headers) == 0:
+                raise Exception("Header length is zero")
+
+
             for row in table.find_elements(By.TAG_NAME, 'tr'):
                 columns = row.find_elements(By.TAG_NAME, 'td')
-                row_data = {f"column_{i}": col.text for i, col in enumerate(columns) if
-                            'ng-hide' not in col.get_attribute('class')}
+                row_data = {f"column_{i}": col.text for i, col in enumerate(columns) if 'ng-hide' not in col.get_attribute('class')}
                 if any(value.strip() for value in row_data.values()):
                     results[regatta_name].append(row_data)
+
             results[regatta_name] = replace_column_keys(results[regatta_name], headers)
         except:
-            print("WHy am i Here?")
-            regatta_name = driver.find_element(By.CSS_SELECTOR, regatta_name_selector).text
             results[regatta_name] = "no results"
+
     return results
 
 
@@ -142,50 +230,3 @@ if __name__ == "__main__":
         print(f"An error occurred: {e}")
     finally:
         driver.quit()
-
-
-''' Hier ist der Code mit IF Else'''
-# def scrape_eventresults(base_url, driver):
-#     results = {}
-#     wait = WebDriverWait(driver, 10)
-#     results_url = base_url + '#!/results'
-#     driver.get(results_url)
-#
-#     dropdown_selector = '#results > div > div > select'
-#     regatta_name_selector = '#results > div > div > div.regattaName'
-#     table_selector = '#results > div > div > div:nth-child(3) > div:nth-child(5) > div:nth-child(2) > div:nth-child(3) > table:nth-child(4)'
-#     header_selector = table_selector + ' > thead'
-#
-#     try:
-#         dropdown = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, dropdown_selector)))
-#         select = Select(dropdown)
-#         if len(select.options) > 0:
-#             for option in select.options:
-#                 option_name = option.text
-#                 select.select_by_visible_text(option_name)
-#                 wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, table_selector)))
-#
-#                 results[option_name] = []
-#                 table = driver.find_element(By.CSS_SELECTOR, table_selector)
-#                 headers = get_table_headers(driver, wait, header_selector)
-#                 for row in table.find_elements(By.TAG_NAME, 'tr'):
-#                     columns = row.find_elements(By.TAG_NAME, 'td')
-#                     row_data = {f"column_{i}": col.text for i, col in enumerate(columns) if 'ng-hide' not in col.get_attribute('class')}
-#                     if any(value.strip() for value in row_data.values()):
-#                         results[option_name].append(row_data)
-#                 results[option_name] = replace_column_keys(results[option_name], headers)
-#         else:
-#             raise Exception("No options found in dropdown")
-#     except Exception as e:
-#         regatta_name = driver.find_element(By.CSS_SELECTOR, regatta_name_selector).text
-#         results[regatta_name] = []
-#         table = driver.find_element(By.CSS_SELECTOR, table_selector)
-#         headers = get_table_headers(driver, wait, header_selector)
-#         for row in table.find_elements(By.TAG_NAME, 'tr'):
-#             columns = row.find_elements(By.TAG_NAME, 'td')
-#             row_data = {f"column_{i}": col.text for i, col in enumerate(columns) if 'ng-hide' not in col.get_attribute('class')}
-#             if any(value.strip() for value in row_data.values()):
-#                 results[regatta_name].append(row_data)
-#             results[regatta_name] = replace_column_keys(results[regatta_name], headers)
-#
-#     return results
