@@ -1,9 +1,9 @@
 # Scrape and Analyse Events from Manage2Sail.com
 
 ## How to
-1. Create a MongoDB database
-   1.1. Create a Cluster
-   1.2. Connect to MongoDB Compass
+1. Create a MongoDB database /n
+   1.1. Create a Cluster/ 
+   1.2. Connect to MongoDB Compass /n
    1.3. Create a database named "manage2sail"
    1.4. Create a config file named: "dbconfig.json" (see template!)
 2. Install the requirements.txt
